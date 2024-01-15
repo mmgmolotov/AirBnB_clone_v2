@@ -10,8 +10,10 @@ def do_pack():
         local("mkdir -p versions")
         local(f"tar -cvzf versions/web_static_{time.strftime('%Y%m%d%H%M%S')}.tgz "
               f"web_static/")
-        return (f"versions/web_static_{time.strftime('%Y%m%d%H%M%S')}.tgz")
+        return f"versions/web_static_{time.strftime('%Y%m%d%H%M%S')}.tgz"
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
+
+# Calling the function
 do_pack()
