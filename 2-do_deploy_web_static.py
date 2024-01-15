@@ -34,7 +34,7 @@ def do_deploy(archive_path):
             raise Exception("Deleting existing folder failed")
 
         # Create a new archive folder
-        if run("mkdir -p /data/web_static/releases/{}/".format(folder)).failed:
+        if run("sudo mkdir -p /data/web_static/releases/{}/".format(folder)).failed:
             raise Exception("Creating new archive folder failed")
 
         # Uncompress archive to /data/web_static/releases/{}/ directory
