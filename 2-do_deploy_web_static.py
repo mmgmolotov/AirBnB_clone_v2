@@ -3,7 +3,6 @@
 
 import os.path
 from fabric.api import env, put, run
-from fabric.exceptions import CommandExecutionError
 
 env.user = "ubuntu"
 env.hosts = ['52.3.247.21', '34.207.237.255']
@@ -28,46 +27,43 @@ def do_deploy(archive_path):
     try:
         # Uploads archive to /tmp/ directory
         if put(archive_path, "/tmp/{}".format(full_file)).failed:
-            raise CommandExecutionError("Uploading archive to /tmp/ failed")
+            raise Exception("Uploading archive to /tmp/ failed")
 
         # Clean up existing folder with the same name on the server
         if run("rm -rf /data/web_static/releases/{}/".format(folder)).failed:
-            raise CommandExecutionError("Deleting existing folder failed")
+            raise Exception("Deleting existing folder failed")
 
         # Create a new archive folder
         if run("mkdir -p /data/web_static/releases/{}/".format(folder)).failed:
-            raise CommandExecutionError("Creating new archive folder failed")
+            raise Exception("Creating new archive folder failed")
 
         # Uncompress archive to /data/web_static/releases/{}/ directory
         if run("tar -xzf /tmp/{} -C /data/web_static/releases/{}/".format(full_file, folder)).failed:
-            raise CommandExecutionError("Uncompressing archive failed")
+            raise Exception("Uncompressing archive failed")
 
         # Clean up: delete the uploaded archive
         if run("rm /tmp/{}".format(full_file)).failed:
-            raise CommandExecutionError("Deleting archive from /tmp/ directory failed")
+            raise Exception("Deleting archive from /tmp/ directory failed")
 
         # Move content from web_static to its parent folder
         if run("mv /data/web_static/releases/{}/web_static/* /data/web_static/releases/{}/".format(folder, folder)).failed:
-            raise CommandExecutionError("Moving content to archive folder failed")
+            raise Exception("Moving content to archive folder failed")
 
         # Clean up: delete the empty web_static folder
         if run("rm -rf /data/web_static/releases/{}/web_static".format(folder)).failed:
-            raise CommandExecutionError("Deleting web_static folder failed")
+            raise Exception("Deleting web_static folder failed")
 
         # Clean up: delete current folder (the symbolic link)
         if run("rm -rf /data/web_static/current").failed:
-            raise CommandExecutionError("Deleting 'current' folder failed")
+            raise Exception("Deleting 'current' folder failed")
 
         # Create new symbolic link on the web server linked to the new code version
         if run("ln -s /data/web_static/releases/{}/ /data/web_static/current".format(folder)).failed:
-            raise CommandExecutionError("Creating new symbolic link to new code version failed")
+            raise Exception("Creating new symbolic link to new code version failed")
 
         print("New version deployed!")
         return True
 
-    except CommandExecutionError as e:
-        print("Error:", e)
-        return False
     except Exception as e:
         print("Error:", e)
         return False
