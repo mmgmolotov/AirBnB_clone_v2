@@ -4,9 +4,11 @@
 import os.path
 from fabric.api import env, put, run
 
+# Set the LC_ALL environment variable to a UTF-8 locale
+env.update({'LC_ALL': 'en_US.UTF-8'})
+
 env.user = "ubuntu"
 env.hosts = ['52.3.247.21', '34.207.237.255']
-
 
 def do_deploy(archive_path):
     """Distributes an archive to a web server.
