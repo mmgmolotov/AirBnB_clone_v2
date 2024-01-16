@@ -7,7 +7,7 @@ Fabric script methods:
 Usage:
     fab -f 3-deploy_web_static.py deploy -i my_ssh_private_key -u ubuntu
 """
-from fabric.api import local, env, put, run
+from fabric.api import local, env, put, run, settings
 from datetime import datetime
 from os.path import exists, isdir
 
@@ -45,7 +45,10 @@ def do_deploy(archive_path):
         run('rm /tmp/{}'.format(file_n))
         run('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
         run('rm -rf {}{}/web_static'.format(path, no_ext))
-        run('rm -rf /data/web_static/current', warn=True)
+        
+        with settings(warn_only=True):
+            run('rm -rf /data/web_static/current')
+        
         run('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
         return True
     except Exception as e:
