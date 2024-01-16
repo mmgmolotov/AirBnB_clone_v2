@@ -42,6 +42,7 @@ def do_deploy(archive_path):
     run("rm /tmp/{}".format(filename))
     run("mv {}/web_static/* {}".format(path_no_ext, path_no_ext))
     run("rm -rf {}/web_static".format(path_no_ext))
+    run("chmod -R u+w /data/web_static")
     run("rm -rf /data/web_static/current")
     run("ln -s {} /data/web_static/current".format(path_no_ext))
 
