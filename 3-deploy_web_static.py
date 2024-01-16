@@ -14,7 +14,7 @@ def do_pack():
         date_format = datetime.now().strftime("%Y%m%d%H%M%S")
         archive_path = "versions/web_static_{}.tgz".format(date_format)
         local("mkdir -p versions")
-        local("tar -cvzf {} web_static".format(archive_path))
+        local("tar -cvzf {} web_static my_index.html".format(archive_path))
         return archive_path
     except Exception as e:
         print(f"Error in do_pack: {e}")
