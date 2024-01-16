@@ -20,6 +20,7 @@ def do_deploy(archive_path):
         run("sudo mkdir -p {}/".format(no_tgz))
         run("sudo tar -xzf {} -C {}/".format(tmp, no_tgz))
         run("sudo rm {}".format(tmp))
+        run("sudo rsync -a {}/web_static/ {}/".format(no_tgz, no_tgz))
         run("sudo rm -rf {}/web_static".format(no_tgz))
         run("sudo mv {}/web_static/* {}/".format(no_tgz, no_tgz))
         run("sudo rm -rf {}/web_static".format(no_tgz))
