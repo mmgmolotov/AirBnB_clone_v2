@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from fabric.api import local, env, put, run, settings, sudo
 from datetime import datetime
 from os.path import exists, isdir
