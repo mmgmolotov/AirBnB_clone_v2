@@ -3,7 +3,7 @@ from datetime import datetime
 from os.path import exists
 
 env.hosts = ['52.3.247.21', '34.207.237.255']
-env.key_filename = "~/.ssh/id_rsa"  # Add this line to specify the private key file
+env.key_filename = "~/.ssh/school"  # Add this line to specify the private key file
 
 def do_deploy(archive_path):
     """Distributes an archive to my web servers"""
