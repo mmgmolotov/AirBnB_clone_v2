@@ -1,31 +1,8 @@
-#!/usr/bin/python3
-"""
-Fabric script methods:
-    do_pack: packs web_static/ files into .tgz archive
-    do_deploy: deploys archive to webservers
-    deploy: do_packs && do_deploys
-Usage:
-    fab -f 3-deploy_web_static.py deploy -i my_ssh_private_key -u ubuntu
-"""
-from fabric.api import local, env, put, run, settings
+from fabric.api import local, env, put, run, settings, sudo
 from datetime import datetime
 from os.path import exists, isdir
 
 env.hosts = ['52.3.247.21', '34.207.237.255']
-
-
-def do_pack():
-    """generates a tgz archive"""
-    try:
-        date = datetime.now().strftime("%Y%m%d%H%M%S")
-        if isdir("versions") is False:
-            local("mkdir versions")
-        file_name = "versions/web_static_{}.tgz".format(date)
-        local("tar -cvzf {} web_static".format(file_name))
-        return file_name
-    except Exception as e:
-        print(f"Error in do_pack: {e}")
-        return None
 
 
 def do_deploy(archive_path):
@@ -38,31 +15,19 @@ def do_deploy(archive_path):
         path = "/data/web_static/releases/"
 
         print(f"Remote path: {path}{no_ext}/")  # Debugging output
-        
+
         put(archive_path, '/tmp/')
-        run('mkdir -p {}{}/'.format(path, no_ext))
-        run('tar -xzf /tmp/{} -C {}{}/'.format(file_n, path, no_ext))
-        run('rm /tmp/{}'.format(file_n))
-        run('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
-        run('rm -rf {}{}/web_static'.format(path, no_ext))
+        sudo('mkdir -p {}{}/'.format(path, no_ext))
+        sudo('tar -xzf /tmp/{} -C {}{}/'.format(file_n, path, no_ext))
+        sudo('rm /tmp/{}'.format(file_n))
+        sudo('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
+        sudo('rm -rf {}{}/web_static'.format(path, no_ext))
         
         with settings(warn_only=True):
-            run('rm -rf /data/web_static/current')
-        
-        run('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
+            sudo('rm -rf /data/web_static/current')
+
+        sudo('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
         return True
     except Exception as e:
         print(f"Error in do_deploy: {e}")
         return False
-
-
-def deploy():
-    """creates and distributes an archive to the web servers"""
-    archive_path = do_pack()
-    if archive_path is None:
-        return False
-    return do_deploy(archive_path)
-
-
-if __name__ == "__main__":
-    deploy()
