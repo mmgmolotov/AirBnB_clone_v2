@@ -22,8 +22,6 @@ def do_deploy(archive_path):
         run("sudo rm {}".format(tmp))
         run("sudo rsync -a {}/web_static/ {}/".format(no_tgz, no_tgz))
         run("sudo rm -rf {}/web_static".format(no_tgz))
-        run("sudo mv {}/web_static/* {}/".format(no_tgz, no_tgz))
-        run("sudo rm -rf {}/web_static".format(no_tgz))
         run("sudo rm -rf /data/web_static/current")
         run("sudo ln -s {}/ /data/web_static/current".format(no_tgz))
 
