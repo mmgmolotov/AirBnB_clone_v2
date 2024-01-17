@@ -18,7 +18,12 @@ def do_pack():
     local("mkdir -p versions")
     time_format = "%Y%m%d%H%M%S"
     archive_path = "versions/web_static_{}.tgz".format(datetime.now().strftime(time_format))
-    result = local("tar -cvzf {} web_static".format(archive_path))
+
+    # Include my_index.html if it exists
+    index_html_path = "web_static/my_index.html"
+    index_html_flag = "-C web_static/ {}".format(index_html_path) if exists(index_html_path) else ""
+
+    result = local("tar -cvzf {} {} web_static".format(archive_path, index_html_flag))
 
     if result.failed:
         return None
