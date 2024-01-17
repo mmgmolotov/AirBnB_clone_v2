@@ -7,9 +7,7 @@ import os
 from datetime import datetime
 from fabric.api import *
 
-
 env.hosts = ['52.3.247.21', '34.207.237.255']
-
 
 def do_pack():
     """Creates archive from web_static directory"""
@@ -23,7 +21,6 @@ def do_pack():
     else:
         return file
 
-
 def do_deploy(archive_path):
     """Deploys an archive"""
     if not os.path.exists(archive_path):
@@ -36,7 +33,7 @@ def do_deploy(archive_path):
     if tar_file.failed:
         return False
 
-    tar_file = run('mkdir -p /data/web_static/releases/{}'.format(name))
+    tar_file = run('mkdir -p /data/web_static/releases/{}/'.format(name))
     if tar_file.failed:
         return False
 
@@ -63,27 +60,26 @@ def do_deploy(archive_path):
         return False
 
     # Use sudo for the commands that require elevated privileges
-    tar_file = sudo('rm -rf /data/web_static/current', user='root')
-    if tar_file.failed:
-        return False
+    with settings(sudo_user='root'):
+        tar_file = sudo('rm -rf /data/web_static/current')
+        if tar_file.failed:
+            return False
 
-    tar_file = sudo(
-        'ln -s /data/web_static/releases/{}/ /data/web_static/current'
-        .format(name), user='root')
-    if tar_file.failed:
-        return False
+        tar_file = sudo(
+            'ln -s /data/web_static/releases/{}/ /data/web_static/current'
+            .format(name))
+        if tar_file.failed:
+            return False
 
-    # Add logic to create or copy my_index.html
-    tar_file = sudo(
-        'cp /data/web_static/current/my_index.html /data/web_static/current/',
-        user='root'
-    )
-    if tar_file.failed:
-        return False
+        # Add logic to create or copy my_index.html
+        tar_file = sudo(
+            'cp /data/web_static/releases/{0}/my_index.html /data/web_static/current/'
+            .format(name))
+        if tar_file.failed:
+            return False
 
     print('New version deployed!')
     return True
-
 
 def deploy():
     """ Fabric script that creates and distributes an archive to your web servers,
