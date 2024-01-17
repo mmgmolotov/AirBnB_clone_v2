@@ -43,7 +43,7 @@ def do_deploy(archive_path):
         run("rm {}".format(tmp))
         run("mv {}/web_static/* {}/".format(no_tgz, no_tgz))
         run("rm -rf {}/web_static".format(no_tgz))
-        run("rm -rf /data/web_static/current")
+        run("sudo rm -rf /data/web_static/current")
         run("ln -s {}/ /data/web_static/current".format(no_tgz))
 
         return True
