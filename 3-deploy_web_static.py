@@ -1,7 +1,3 @@
-#!/usr/bin/python3
-"""
-Fabric script that creates and distributes an archive to web servers
-"""
 from fabric.api import run, env, local, put, sudo
 from os.path import exists
 from datetime import datetime
@@ -18,12 +14,7 @@ def do_pack():
     local("mkdir -p versions")
     time_format = "%Y%m%d%H%M%S"
     archive_path = "versions/web_static_{}.tgz".format(datetime.now().strftime(time_format))
-
-    # Include my_index.html if it exists
-    index_html_path = "web_static/my_index.html"
-    index_html_flag = "-C web_static/ {}".format(index_html_path) if exists(index_html_path) else ""
-
-    result = local("tar -cvzf {} {} web_static".format(archive_path, index_html_flag))
+    result = local("tar -cvzf {} web_static".format(archive_path))
 
     if result.failed:
         return None
@@ -43,9 +34,11 @@ def do_deploy(archive_path):
     run("mkdir -p {}".format(path_no_ext))
     run("tar -xzf /tmp/{} -C {}".format(filename, path_no_ext))
     run("rm /tmp/{}".format(filename))
-
-    # Move all contents of web_static, including my_index.html
     run("mv {}/web_static/* {}".format(path_no_ext, path_no_ext))
+    run("rm -rf {}/web_static".format(path_no_ext))
+
+    # Add logic to create or copy my_index.html
+    run("echo '<html><body>My Index Page</body></html>' > {}/my_index.html".format(path_no_ext))
 
     # Use sudo for chmod
     sudo("chmod -R u+w /data/web_static")
