@@ -12,8 +12,7 @@ env.hosts = ['52.3.247.21', '34.207.237.255']
 def do_pack():
     """Creates archive from web_static directory"""
     local("mkdir -p versions")
-    file = 'versions/web_static_{}.tgz'\
-        .format(datetime.strftime(datetime.now(), "%Y%m%d%I%M%S"))
+    file = 'versions/web_static_{}.tgz'.format(datetime.strftime(datetime.now(), "%Y%m%d%I%M%S"))
     comp = 'tar -cvzf {} web_static'.format(file)
     tar_file = local(comp)
     if tar_file.failed:
@@ -34,9 +33,7 @@ def do_deploy(archive_path):
     tar_file = run('mkdir -p /data/web_static/releases/{}'.format(name))
     if tar_file.failed:
         return False
-    tar_file = run(
-        'tar -xzf /tmp/{} -C /data/web_static/releases/{}/'
-        .format(arch, name))
+    tar_file = run('tar -xzf /tmp/{} -C /data/web_static/releases/{}/'.format(arch, name))
     if tar_file.failed:
         return False
     tar_file = run('rm /tmp/{}'.format(arch))
@@ -48,23 +45,17 @@ def do_deploy(archive_path):
     index_path = '/data/web_static/releases/{}/my_index.html'.format(name)
     run("echo '{}' > {}".format(index_content, index_path))
 
-    comp = 'mv /data/web_static/releases/{0}/web_static/*'
-    comp += ' /data/web_static/releases/{0}/'
+    comp = 'mv /data/web_static/releases/{0}/web_static/* /data/web_static/releases/{0}/'
     tar_file = run(comp.format(name))
     if tar_file.failed:
         return False
-    tar_file = run(
-                'rm -rf /data/web_static/releases/{}/web_static'
-                .format(name))
+    tar_file = run('rm -rf /data/web_static/releases/{}/web_static'.format(name))
     if tar_file.failed:
         return False
-    # Use sudo for the commands that require elevated privileges
     tar_file = sudo('rm -rf /data/web_static/current', user='root')
     if tar_file.failed:
         return False
-    tar_file = sudo(
-        'ln -s /data/web_static/releases/{}/ /data/web_static/current'
-        .format(name), user='root')
+    tar_file = sudo('ln -s /data/web_static/releases/{}/ /data/web_static/current'.format(name), user='root')
     if tar_file.failed:
         return False
     print('New version deployed!')
