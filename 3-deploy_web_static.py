@@ -52,12 +52,13 @@ def do_deploy(archive_path):
                 .format(name))
     if tar_file.failed:
         return False
-    tar_file = run('rm -rf /data/web_static/current')
+    # Use sudo for the commands that require elevated privileges
+    tar_file = sudo('rm -rf /data/web_static/current', user='root')
     if tar_file.failed:
         return False
-    tar_file = run(
-            'ln -s /data/web_static/releases/{}/ /data/web_static/current'
-            .format(name))
+    tar_file = sudo(
+        'ln -s /data/web_static/releases/{}/ /data/web_static/current'
+        .format(name), user='root')
     if tar_file.failed:
         return False
     print('New version deployed!')
