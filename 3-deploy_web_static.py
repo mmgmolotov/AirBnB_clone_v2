@@ -42,6 +42,12 @@ def do_deploy(archive_path):
     tar_file = run('rm /tmp/{}'.format(arch))
     if tar_file.failed:
         return False
+
+    # Copy or create my_index.html
+    index_content = "<html><head></head><body><p>My Index Content</p></body></html>"
+    index_path = '/data/web_static/releases/{}/my_index.html'.format(name)
+    run("echo '{}' > {}".format(index_content, index_path))
+
     comp = 'mv /data/web_static/releases/{0}/web_static/*'
     comp += ' /data/web_static/releases/{0}/'
     tar_file = run(comp.format(name))
