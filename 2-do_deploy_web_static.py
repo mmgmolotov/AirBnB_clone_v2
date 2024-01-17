@@ -29,24 +29,36 @@ def do_pack():
 
 def do_deploy(archive_path):
     """
-        Distribute archive.
+    Distribute archive.
     """
-    if os.path.exists(archive_path):
-        archived_file = archive_path[9:]
-        newest_version = "/data/web_static/releases/" + archived_file[:-4]
-        archived_file = "/tmp/" + archived_file
+    if not os.path.exists(archive_path):
+        print(f"Error: Archive {archive_path} not found.")
+        return False
+
+    try:
+        # Extract version from the archive path
+        version = archive_path.split("/")[-1][:-4]
+
+        # Upload the archive to the server
         put(archive_path, "/tmp/")
-        run("sudo mkdir -p {}".format(newest_version))
-        run("sudo tar -xzf {} -C {}/".format(archived_file,
-                                             newest_version))
-        run("sudo rm {}".format(archived_file))
-        run("sudo mv {}/web_static/* {}".format(newest_version,
-                                                newest_version))
-        run("sudo rm -rf {}/web_static".format(newest_version))
-        run("sudo rm -rf /data/web_static/current")
-        run("sudo ln -s {} /data/web_static/current".format(newest_version))
+
+        # Create directories and extract files
+        with cd("/data/web_static/releases/"):
+            run(f"sudo mkdir -p {version}")
+            run(f"sudo tar -xzf /tmp/{version}.tgz -C {version}")
+            run(f"sudo rm /tmp/{version}.tgz")
+
+            # Move files to the proper location
+            run(f"sudo mv {version}/web_static/* {version}")
+            run(f"sudo rm -rf {version}/web_static")
+
+            # Update the symbolic link
+            run(f"sudo rm -rf /data/web_static/current")
+            run(f"sudo ln -s /data/web_static/releases/{version} /data/web_static/current")
 
         print("New version deployed!")
         return True
 
-    return False
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
