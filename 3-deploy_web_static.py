@@ -1,75 +1,64 @@
 #!/usr/bin/python3
-"""Fabric script (based on the file 2-do_deploy_web_static.py) that creates and
-distributes an archive to your web servers, using the function deploy"""
-import os
+from fabric.api import run, env, local, put, sudo
+from os.path import exists
 from datetime import datetime
-from fabric.api import *
-
 
 env.hosts = ['52.3.247.21', '34.207.237.255']
+env.user = 'ubuntu'
+env.key_filename = '~/.ssh/school'
 
 
 def do_pack():
-    """Creates archive from web_static directory"""
+    """
+    Create a compressed archive of the web_static folder
+    """
     local("mkdir -p versions")
-    file = 'versions/web_static_{}.tgz'\
-        .format(datetime.strftime(datetime.now(), "%Y%m%d%I%M%S"))
-    comp = 'tar -cvzf {} web_static'.format(file)
-    tar_file = local(comp)
-    if tar_file.failed:
-        return None
-    else:
-        return file
+    time_format = "%Y%m%d%H%M%S"
+    archive_path = "versions/web_static_{}.tgz".format(datetime.now().strftime(time_format))
+    result = local("tar -cvzf {} web_static".format(archive_path))
 
+    if result.failed:
+        return None
+    return archive_path
 
 def do_deploy(archive_path):
-    """Deploys an archive"""
-    if not os.path.exists(archive_path):
+    """
+    Distribute an archive to web servers and deploy the code
+    """
+    if not exists(archive_path):
         return False
-    arch = archive_path.split('/')[1]
-    name = arch.split('.')[0]
-    tar_file = put(archive_path, '/tmp/{}'.format(arch))
-    if tar_file.failed:
-        return False
-    tar_file = run('mkdir -p /data/web_static/releases/{}'.format(name))
-    if tar_file.failed:
-        return False
-    tar_file = run(
-        'tar -xzf /tmp/{} -C /data/web_static/releases/{}/'
-        .format(arch, name))
-    if tar_file.failed:
-        return False
-    tar_file = run('rm /tmp/{}'.format(arch))
-    if tar_file.failed:
-        return False
-    comp = 'mv /data/web_static/releases/{0}/web_static/*'
-    comp += ' /data/web_static/releases/{0}/'
-    tar_file = run(comp.format(name))
-    if tar_file.failed:
-        return False
-    tar_file = run(
-                'rm -rf /data/web_static/releases/{}/web_static'
-                .format(name))
-    if tar_file.failed:
-        return False
-    tar_file = run('rm -rf /data/web_static/current')
-    if tar_file.failed:
-        return False
-    tar_file = run(
-            'ln -s /data/web_static/releases/{}/ /data/web_static/current'
-            .format(name))
-    if tar_file.failed:
-        return False
-    print('New version deployed!')
+
+    filename = archive_path.split("/")[-1]
+    path_no_ext = "/data/web_static/releases/{}".format(filename[:-4])
+
+    put(archive_path, '/tmp/')
+    run("mkdir -p {}".format(path_no_ext))
+    run("tar -xzf /tmp/{} -C {}".format(filename, path_no_ext))
+    run("rm /tmp/{}".format(filename))
+    run("mv {}/web_static/* {}".format(path_no_ext, path_no_ext))
+    run("rm -rf {}/web_static".format(path_no_ext))
+
+    # Add logic to create or copy my_index.html
+    run("echo '<html><body>My Index Page</body></html>' > {}/my_index.html".format(path_no_ext))
+
+    # Use sudo for chmod
+    sudo("chmod -R u+w /data/web_static")
+
+    # Change ownership to www-data
+    sudo("chown -R www-data:www-data {}".format(path_no_ext))
+
+    # Remove the symbolic link and create a new one
+    sudo("rm -rf /data/web_static/current")
+    sudo("ln -s {} /data/web_static/current".format(path_no_ext))
+
     return True
 
-
 def deploy():
-    """ Fabric script (based on the file 2-do_deploy_web_static.py)
-    that creates and distributes an archive to your web servers,
-    using the function deploy"""
-    archive = do_pack()
-    if archive is None:
+    """
+    Create and distribute an archive to web servers
+    """
+    archive_path = do_pack()
+    if not archive_path:
         return False
-    tar_file = do_deploy(archive)
-    return tar_file
+
+    return do_deploy(archive_path)
