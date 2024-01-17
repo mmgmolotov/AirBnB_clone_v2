@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+"""
+Fabric script that creates and distributes an archive to web servers
+"""
 from fabric.api import run, env, local, put, sudo
 from os.path import exists
 from datetime import datetime
@@ -38,14 +41,14 @@ def do_deploy(archive_path):
     run("mv {}/web_static/* {}".format(path_no_ext, path_no_ext))
     run("rm -rf {}/web_static".format(path_no_ext))
 
-    # Add logic to create or copy my_index.html
-    run("echo '<html><body>My Index Page</body></html>' > {}/my_index.html".format(path_no_ext))
-
     # Use sudo for chmod
     sudo("chmod -R u+w /data/web_static")
 
     # Change ownership to www-data
     sudo("chown -R www-data:www-data {}".format(path_no_ext))
+
+    # Create and deploy my_index.html
+    run("echo '<html><head></head><body>My Custom Index</body></html>' > {}/my_index.html".format(path_no_ext))
 
     # Remove the symbolic link and create a new one
     sudo("rm -rf /data/web_static/current")
