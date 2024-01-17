@@ -43,12 +43,9 @@ def do_deploy(archive_path):
     run("mkdir -p {}".format(path_no_ext))
     run("tar -xzf /tmp/{} -C {}".format(filename, path_no_ext))
     run("rm /tmp/{}".format(filename))
-    
-    # Ensure the 'my_index.html' file is present in web_static
+
+    # Move all contents of web_static, including my_index.html
     run("mv {}/web_static/* {}".format(path_no_ext, path_no_ext))
-    run("mv {}/web_static/my_index.html {}".format(path_no_ext, path_no_ext))
-    
-    run("rm -rf {}/web_static".format(path_no_ext))
 
     # Use sudo for chmod
     sudo("chmod -R u+w /data/web_static")
