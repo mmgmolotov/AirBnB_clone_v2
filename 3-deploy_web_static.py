@@ -42,7 +42,7 @@ def do_deploy(archive_path):
 
     # Create an empty my_index.html
     index_path = '/data/web_static/releases/{}/my_index.html'.format(name)
-    run("touch {}".format(index_path))
+    run("echo '' > {}".format(index_path))
 
     comp = 'mv /data/web_static/releases/{0}/web_static/* /data/web_static/releases/{0}/'
     tar_file = run(comp.format(name))
