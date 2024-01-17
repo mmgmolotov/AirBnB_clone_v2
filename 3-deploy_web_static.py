@@ -44,10 +44,10 @@ def do_deploy(archive_path):
     run("tar -xzf /tmp/{} -C {}".format(filename, path_no_ext))
     run("rm /tmp/{}".format(filename))
     
-    # Explicitly move my_index.html to the correct location
+    # Ensure the 'my_index.html' file is present in web_static
+    run("mv {}/web_static/* {}".format(path_no_ext, path_no_ext))
     run("mv {}/web_static/my_index.html {}".format(path_no_ext, path_no_ext))
     
-    run("mv {}/web_static/* {}".format(path_no_ext, path_no_ext))
     run("rm -rf {}/web_static".format(path_no_ext))
 
     # Use sudo for chmod
